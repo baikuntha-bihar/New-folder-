@@ -1,122 +1,74 @@
-fixed 
-
-
 
 @Component
 @RequiredArgsConstructor
-public class ChargebackValidator extends BaseValidator {
+public class ChargeBackValidator extends BaseValidator {
 
-    private final LoggerUtility logger =
-            LoggerFactoryUtility.getLogger(this.getClass());
+    private static final String TO_DATE = "yyyy-mm-dd";
+    private static final String CHARGEBACK_STATUS = "Chargeback";
+    private final LoggerUtility logger = LoggerFactoryUtility.getLogger(this.getClass());
 
     /**
-     * Validate chargeback search request
-     *
+     * Validate chargebackDashboardrequest
+     * <p>
      * Mandatory fields:
      * 1. fromDate
      * 2. toDate
-     *
+     * <p>
      * Optional fields:
      * 1. mId
      * 2. chargebackStatus
      *
-     * @param chargebackSearchRequest ChargebackSearchRequest
+     * @param chargebackDashboardRequest chargebackDashboardrequest
      */
-    public void validateChargebackSearchRequest(
-            ChargebackSearchRequest chargebackSearchRequest) {
-
-        logger.info(
-                "Inside validateChargebackSearchRequest for mId: {}",
-                chargebackSearchRequest.getMId());
-
+    public void validateChargebackSearchRequest(ChargebackDashboardRequest chargebackDashboardRequest) {
+        logger.info("Inside validateChargebackSearchRequest for mId: {}", chargebackDashboardRequest.getMerchantId());
         errorDtoList = new ArrayList<>();
-
-        // Step-1: Validate mandatory fields
-        validateMandatoryFields(chargebackSearchRequest);
-
-        // Step-2: Validate leading/trailing spaces
-        validateLeadingTrailingSpaces(chargebackSearchRequest);
-
-        // Step-3: Validate field values
-        validateFieldsValue(chargebackSearchRequest);
-
-        // Step-4: Validate from date and to date
-        validateChargebackDates(
-                chargebackSearchRequest.getFromDate(),
-                chargebackSearchRequest.getToDate());
-
+        validateMandatoryFields(chargebackDashboardRequest);
+        validateLeadingTrailingSpaces(chargebackDashboardRequest);
+        validateFieldsValue(chargebackDashboardRequest);
+        validateChargebackDates(chargebackDashboardRequest.getFromDate(), chargebackDashboardRequest.getToDate());
         throwIfErrors();
-
-        logger.info(
-                "Chargeback search request validation completed");
+        logger.info("Chargeback search request validation completed");
     }
 
     /**
      * Validate mandatory fields for chargeback search request.
-     *
+     * <p>
      * fromDate and toDate are mandatory.
      *
      * @param request ChargebackSearchRequest
      */
-    protected void validateMandatoryFields(
-            ChargebackSearchRequest request) {
-
-        logger.info(
-                "Validating mandatory fields for chargeback search request");
-
-        checkMandatoryDateField(
-                request.getFromDate(),
-                FROM_DATE);
-
-        checkMandatoryDateField(
-                request.getToDate(),
-                TO_DATE);
-
+    protected void validateMandatoryFields(ChargebackDashboardRequest request) {
+        logger.info("Validating mandatory fields for chargeback search request");
+        checkMandatoryDateField(request.getFromDate(), FROM_DATE);
+        checkMandatoryDateField(request.getToDate(), TO_DATE);
         throwIfErrors();
     }
 
     /**
      * Validate field values for chargeback search request.
-     *
+     * <p>
      * MID and chargebackStatus are optional.
      * Validation will happen only when values are provided.
      *
      * @param request ChargebackSearchRequest
      */
-    protected void validateFieldsValue(
-            ChargebackSearchRequest request) {
-
-        logger.info(
-                "Inside validateFieldsValue for chargeback search request, mId: {}",
-                request.getMId());
+    protected void validateFieldsValue(ChargebackDashboardRequest request) {
+        logger.info("Inside validateFieldsValue for chargeback search request, mId: {}", request.getMerchantId());
 
         // MID is optional
-        if (StringUtils.isNotEmpty(request.getMId())) {
-
-            validateFixedFieldLength(
-                    request.getMId(),
-                    TransactionConstant.MID_MAX_LENGTH,
-                    MID);
-
+        if (StringUtils.isNotEmpty(request.getMerchantId())) {
+            validateFixedFieldLength(request.getMerchantId(), TransactionConstant.MID_MAX_LENGTH, MID);
             throwIfErrors();
-
-            validateFieldWithRegex(
-                    request.getMId(),
-                    NUMBER_ONLY,
-                    MID,
-                    INCORRECT_FORMAT);
-
+            validateFieldWithRegex(request.getMerchantId(), NUMBER_ONLY, MID, INCORRECT_FORMAT);
             throwIfErrors();
         }
 
         // Chargeback status is optional
-        if (StringUtils.isNotEmpty(request.getChargebackStatus())) {
-
-            validateChargebackStatus(
-                    request.getChargebackStatus());
-
-            throwIfErrors();
-        }
+//        if (StringUtils.isNotEmpty(request.getChargebackStatus())) {
+//            validateChargebackStatus(request.getChargebackStatus());
+//            throwIfErrors();
+//        }
     }
 
     /**
@@ -124,57 +76,40 @@ public class ChargebackValidator extends BaseValidator {
      *
      * @param chargebackStatus String
      */
-    private void validateChargebackStatus(String chargebackStatus) {
-
-        logger.info(
-                "Validating chargeback status: {}",
-                chargebackStatus);
-
-        /*
-         * Use your actual ChargebackStatus enum here.
-         *
-         * Example:
-         *
-         * ChargebackStatus.getChargebackStatus(chargebackStatus);
-         */
-
-        validateFieldValue(
-                chargebackStatus,
-                Arrays.stream(ChargebackStatus.values())
-                        .map(Enum::name)
-                        .toList(),
-                CHARGEBACK_STATUS);
-
-        throwIfErrors();
-    }
+//    private void validateChargebackStatus(String chargebackStatus) {
+//
+//        logger.info("Validating chargeback status: {}", chargebackStatus);
+//
+//        /*
+//         * Use your actual ChargebackStatus enum here.
+//         *
+//         * Example:
+//         *
+//         * ChargebackStatus.getChargebackStatus(chargebackStatus);
+//         */
+//        validateFieldValue(chargebackStatus, Arrays.stream(ChargebackStatus.values()).map(Enum::name).toList(), CHARGEBACK_STATUS);
+//        throwIfErrors();
+//    }
 
     /**
      * Validate leading and trailing spaces.
      *
      * @param request ChargebackSearchRequest
      */
-    private void validateLeadingTrailingSpaces(
-            ChargebackSearchRequest request) {
+    private void validateLeadingTrailingSpaces(ChargebackDashboardRequest request) {
 
-        logger.info(
-                "Checking leading/trailing spaces for chargeback request");
+        logger.info("Checking leading/trailing spaces for chargeback request");
 
-        checkForLeadingTrailingAndSingleSpace(
-                request.getMId(),
-                MID);
-
-        checkForLeadingTrailingAndSingleSpace(
-                request.getChargebackStatus(),
-                CHARGEBACK_STATUS);
-
+        checkForLeadingTrailingAndSingleSpace(request.getMerchantId(), MID);
+        checkForLeadingTrailingAndSingleSpace(request.getChargebackStatus(), CHARGEBACK_STATUS);
         throwIfErrors();
     }
 
     /**
      * Validate chargeback report dates.
-     *
+     * <p>
      * Rules:
-     *
+     * <p>
      * 1. fromDate is mandatory
      * 2. toDate is mandatory
      * 3. fromDate cannot be future date
@@ -185,73 +120,31 @@ public class ChargebackValidator extends BaseValidator {
      * @param fromDate Long
      * @param toDate   Long
      */
-    private void validateChargebackDates(
-            Long fromDate,
-            Long toDate) {
+    private void validateChargebackDates(Long fromDate, Long toDate) {
 
-        logger.info(
-                "Validating chargeback dates fromDate: {}, toDate: {}",
-                fromDate,
-                toDate);
-
+        logger.info("Validating chargeback dates fromDate: {}, toDate: {}", fromDate, toDate);
         // Step-1: Mandatory date validation
-        checkMandatoryDateField(
-                fromDate,
-                FROM_DATE);
-
-        checkMandatoryDateField(
-                toDate,
-                TO_DATE);
-
+        checkMandatoryDateField(fromDate, FROM_DATE);
+        checkMandatoryDateField(toDate, TO_DATE);
         throwIfErrors();
-
         // Step-2: Future from date
         if (fromDate > DateTimeUtils.endOfDayMillis()) {
-
-            addError(
-                    FROM_DATE,
-                    INVALID_ERROR_CODE,
-                    MessageFormat.format(
-                            INVALID_ERROR_MESSAGE,
-                            FROM_DATE,
-                            FUTURE_DATE_ERROR));
-
+            addError(FROM_DATE, INVALID_ERROR_CODE, MessageFormat.format(INVALID_ERROR_MESSAGE, FROM_DATE, FUTURE_DATE_ERROR));
             throwIfErrors();
         }
-
         // Step-3: Future to date
         if (toDate > DateTimeUtils.endOfDayMillis()) {
-
-            addError(
-                    TO_DATE,
-                    INVALID_ERROR_CODE,
-                    MessageFormat.format(
-                            INVALID_ERROR_MESSAGE,
-                            TO_DATE,
-                            FUTURE_DATE_ERROR));
-
+            addError(TO_DATE, INVALID_ERROR_CODE, MessageFormat.format(INVALID_ERROR_MESSAGE, TO_DATE, FUTURE_DATE_ERROR));
             throwIfErrors();
         }
-
         // Step-4: From date cannot be greater than to date
         if (fromDate > toDate) {
-
-            addError(
-                    FROM_DATE,
-                    INVALID_ERROR_CODE,
-                    MessageFormat.format(
-                            INVALID_ERROR_MESSAGE,
-                            FROM_DATE,
-                            FROM_TO_DATE_ERROR));
-
+            addError(FROM_DATE, INVALID_ERROR_CODE, MessageFormat.format(INVALID_ERROR_MESSAGE, FROM_DATE, FROM_TO_DATE_ERROR));
             throwIfErrors();
         }
-
         // Step-5: Maximum six months
         validateSixMonthRange(fromDate, toDate);
-
-        logger.info(
-                "Chargeback date validation completed");
+        logger.info("Chargeback date validation completed");
     }
 
     /**
@@ -260,39 +153,38 @@ public class ChargebackValidator extends BaseValidator {
      * @param fromDate Long
      * @param toDate   Long
      */
-    private void validateSixMonthRange(
-            Long fromDate,
-            Long toDate) {
-
-        LocalDate fromLocalDate =
-                Instant.ofEpochMilli(fromDate)
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
-
-        LocalDate toLocalDate =
-                Instant.ofEpochMilli(toDate)
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
-
-        LocalDate maximumDate =
-                fromLocalDate.plusMonths(6);
+    private void validateSixMonthRange(Long fromDate, Long toDate) {
+        LocalDate fromLocalDate = Instant.ofEpochMilli(fromDate).atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate toLocalDate = Instant.ofEpochMilli(toDate).atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate maximumDate = fromLocalDate.plusMonths(6);
 
         if (toLocalDate.isAfter(maximumDate)) {
-
-            logger.info(
-                    "Chargeback date range exceeds six months. fromDate: {}, toDate: {}",
-                    fromDate,
-                    toDate);
-
-            addError(
-                    FROM_DATE,
-                    INVALID_ERROR_CODE,
-                    MessageFormat.format(
-                            INVALID_ERROR_MESSAGE,
-                            FROM_DATE,
-                            CHARGEBACK_DATE_RANGE_6_MONTH_ERROR));
-
+            logger.info("Chargeback date range exceeds six months. fromDate: {}, toDate: {}", fromDate, toDate);
+            addError(FROM_DATE, INVALID_ERROR_CODE, MessageFormat.format(INVALID_ERROR_MESSAGE, FROM_DATE, CHARGEBACK_DATE_RANGE_6_MONTH_ERROR));
             throwIfErrors();
         }
+
     }
 }
+-------------------------
+@Service
+@RequiredArgsConstructor
+public class ChargeBackDashBoardService {
+    private final ChargebackDao chargebackDao;
+    private final ChargeBackValidator chargeBackValidator;
+    private final ChargebackBookingRepository chargebackBookingRepository;
+
+    private final LoggerUtility logger = LoggerFactoryUtility.getLogger(this.getClass());
+
+    public List<ChargebackBookingDto> getChargebackDetails(ChargebackDashboardRequest request) {
+        Long fromDate = request.getFromDate();
+        Long toDate = request.getToDate();
+
+        return chargebackDao.getChargebackDetailsBetweenDate(fromDate, toDate);
+    }
+
+}
+// this service layer how to implement here chargebackvalidation give me whole code  
+
+
+
